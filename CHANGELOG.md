@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- `Entity#debug`: set to `false` to hide an entity from the debug overlay.
+- `Entity#drawDebug(r, color, lineWidth)`: override to draw custom debug info, like velocity or sensors.
+- `Debug#ignoreTags`: hides every entity with one of these tags from the overlay.
+- `Debug#watch(label, read)` and `Debug#unwatch(label)`: show your own values in the stats panel.
+- `Debug#shows(entity)`: whether the overlay draws an entity.
+- The overlay's entity line now reads `entities N (shown M)`, and the panel widens to fit its longest line.
+
+### Fixed
+
+- The debug overlay drew circle hitboxes as boxes. It now draws them as circles, matching `Collision`.
+
 ## [0.1.0] - 2026-10-11
 
 First public version.

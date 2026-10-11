@@ -196,7 +196,7 @@ export class PowerUp extends Entity {
 
 export class Particle extends Entity {
   constructor() {
-    super({ w: 4, h: 4, z: 3 });
+    super({ w: 4, h: 4, z: 3, tags: ['fx'] });
     this.life = 0;
     this.maxLife = 1;
     this.color = '#fff';

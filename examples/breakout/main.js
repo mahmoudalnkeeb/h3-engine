@@ -6,6 +6,9 @@ const game = new Game({ canvas: '#game', width: W, height: H, background: '#1010
 
 game.scenes.add('title', TitleScene).add('play', PlayScene).add('pause', PauseScene).add('gameover', GameOverScene);
 
+// Particles are tagged 'fx'; hide the whole category from the debug overlay.
+game.debug.ignoreTags.add('fx');
+
 game.start('title');
 
 // Exposed for poking at from the browser console.

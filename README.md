@@ -2,7 +2,7 @@
 
 A small 2D game engine for the HTML canvas. It covers the parts every browser game needs and stays out of the way for the rest: a fixed-timestep loop, scenes, entities, polled input, collision, a camera, timers, tweens, asset loading and sound.
 
-It's plain JavaScript (ES modules) with zero runtime dependencies, and the whole library is 9.4 KB minified and gzipped. The source is short enough to read in an afternoon, which is the point.
+It's plain JavaScript (ES modules) with zero runtime dependencies, and the whole library is 9.6 KB minified and gzipped. The source is short enough to read in an afternoon, which is the point.
 
 ```js
 import { Entity, Game, Scene } from 'h3-engine';
@@ -45,7 +45,7 @@ There are three example games, each in its own folder under `examples/`:
 - `breakout` has mouse, touch and keyboard controls, power-ups, multi-ball, pooled particles and a pause overlay.
 - `platformer` has two scrolling levels from ASCII maps, tile collision, one-way platforms, enemies you can stomp, and a camera that follows the player.
 
-Press `` ` `` in any of them to toggle the debug overlay (FPS, entity count, hitboxes).
+Press `` ` `` in any of them to toggle the debug overlay (FPS, entity count, hitboxes, watched values).
 
 ## Documentation
 
@@ -84,7 +84,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full rules. The short version: Pu
 
 Pre-1.0. The API may still change in minor versions.
 
-Done: the loop, renderer, input, scenes, entities, assets, sprites and animation, collision, camera, timers, tweens, audio, debug overlay and object pooling, with 68 unit tests. Sprites and animation are covered by tests but not used by an example yet, since the examples draw everything with shapes.
+Done: the loop, renderer, input, scenes, entities, assets, sprites and animation, collision, camera, timers, tweens, audio, debug overlay and object pooling, with 74 unit tests. Sprites and animation are covered by tests but not used by an example yet, since the examples draw everything with shapes.
 
 Before 1.0: publish to npm, and add an example that uses image assets.
 
@@ -94,7 +94,7 @@ Not planned: 3D, a physics engine, a visual editor, networking.
 
 | Budget | Target | Now |
 | --- | --- | --- |
-| Full bundle, min + gzip | < 20 KB | 9.4 KB |
+| Full bundle, min + gzip | < 20 KB | 9.6 KB |
 | Runtime dependencies | 0 | 0 |
 
 Browser support: the last two versions of Chrome, Firefox, Safari and Edge, plus iOS Safari 15+.

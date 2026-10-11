@@ -18,7 +18,7 @@ If you're new, read the first three pages in order. After that, jump to whatever
 8. [Collision](08-collision.md): checking overlaps, pushing things apart, and tile-based platformer movement.
 9. [Timers and tweens](09-timers-and-tweens.md): "do this in 2 seconds" and "slide this over half a second".
 10. [Assets and audio](10-assets-and-audio.md): loading images and sounds, and the browser's audio unlock rule.
-11. [Debugging](11-debugging.md): the debug overlay, stepping a game by hand, and a list of common mistakes.
+11. [Debugging](11-debugging.md): the debug overlay and how to customize it, stepping a game by hand, and a list of common mistakes.
 
 For exact signatures, hover anything in your editor: every public class and method has JSDoc, and the npm package ships matching `.d.ts` files.
 

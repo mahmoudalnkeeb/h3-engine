@@ -38,5 +38,9 @@ export const fakeRenderer = () => {
     translate: record('translate'),
     scale: record('scale'),
     rect: record('rect'),
+    strokeRect: record('strokeRect'),
+    strokeCircle: record('strokeCircle'),
+    line: record('line'),
+    text: record('text'),
   };
 };

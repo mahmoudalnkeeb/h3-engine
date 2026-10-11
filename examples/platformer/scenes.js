@@ -47,6 +47,8 @@ export class PlayScene extends Scene {
     /** 'play', 'dead' or 'won'. */
     this.state = 'play';
     this.particles = new Pool(() => new Particle(), 60);
+    this.game.debug.watch('particles', () => this.count('fx'));
+    this.game.debug.watch('player', () => `${this.player.vel.x | 0},${this.player.vel.y | 0} ${this.state}`);
 
     const def = LEVELS[level];
     this.level = this.add(new Level(def.map));
@@ -96,6 +98,11 @@ export class PlayScene extends Scene {
     });
 
     Collision.check(this, 'player', 'goal', () => this.reachGoal());
+  }
+
+  exit() {
+    this.game.debug.unwatch('particles');
+    this.game.debug.unwatch('player');
   }
 
   burst(x, y, color, count) {

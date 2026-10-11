@@ -15,7 +15,8 @@ import { Vec2 } from '../util/Vec2.js';
 
 /**
  * Base class for anything placed in a scene. Override `update` and `render`;
- * optionally define `onAdd(scene)`, `onRemove(scene)` and `onCollide(other)`.
+ * optionally define `onAdd(scene)`, `onRemove(scene)` and `onCollide(other)`,
+ * and override `drawDebug` to customize the debug overlay.
  *
  * The default `update` moves `pos` by `vel * dt`. Call `super.update(dt)`
  * from an override to keep that.
@@ -37,6 +38,8 @@ export class Entity {
     this.visible = true;
     /** When false, `update` and collision checks are skipped; the entity still draws. */
     this.active = true;
+    /** When false, the debug overlay skips this entity. */
+    this.debug = true;
     /** @type {Set<string>} */
     this.tags = new Set(tags);
     /** True from the moment {@link Entity#destroy} is called. */
@@ -115,6 +118,19 @@ export class Entity {
    * @param {number} [_alpha]
    */
   render(_r, _alpha) {}
+
+  /**
+   * Draw this entity's debug info. Called by the debug overlay every frame
+   * while enabled, in world space. The default strokes the hitbox in its
+   * shape; override to add more and call `super.drawDebug` to keep the box.
+   * @param {import('../render/Renderer.js').Renderer} r
+   * @param {string} color
+   * @param {number} lineWidth Already divided by the camera zoom.
+   */
+  drawDebug(r, color, lineWidth) {
+    if (this.shape === 'circle') r.strokeCircle(this.cx, this.cy, this.radius, color, lineWidth);
+    else r.strokeRect(this.pos.x, this.pos.y, this.w, this.h, color, lineWidth);
+  }
 
   /** Mark dead now; leave the scene at the end of the current step. Safe to call twice. */
   destroy() {

@@ -82,6 +82,13 @@ export class Player extends Entity {
     this.sy = 1.3;
   }
 
+  drawDebug(r, color, lineWidth) {
+    super.drawDebug(r, color, lineWidth);
+    // Velocity, scaled down so a full-speed run is about one tile long.
+    r.line(this.cx, this.cy, this.cx + this.vel.x * 0.1, this.cy + this.vel.y * 0.1, '#ff0', lineWidth);
+    if (this.onGround) r.line(this.pos.x, this.pos.y + this.h, this.pos.x + this.w, this.pos.y + this.h, '#0ff', lineWidth);
+  }
+
   render(r) {
     const w = Math.round(this.w * this.sx);
     const h = Math.round(this.h * this.sy);
@@ -187,7 +194,9 @@ export class Flag extends Entity {
 
 export class Particle extends Entity {
   constructor() {
-    super({ w: 2, h: 2, z: 6 });
+    super({ w: 2, h: 2, z: 6, tags: ['fx'] });
+    // Sparks are decoration, so keep them out of the debug overlay.
+    this.debug = false;
     this.life = 0;
     this.maxLife = 1;
     this.color = '#fff';
