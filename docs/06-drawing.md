@@ -42,7 +42,7 @@ Text is positioned by its top-left corner by default (`baseline: 'top'`), which 
 
 `poly` takes a flat list of numbers, not an array of points. The platformer draws its spikes as two triangles this way.
 
-You can build a surprising amount from rectangles alone. Every visual in both example games is rectangles, circles, triangles and text, without a single image file. Look at `Player.render` in `examples/platformer/entities.js`: the body, the highlight, the eyes and the pupils are all `r.rect` calls.
+You can build a surprising amount from rectangles alone. Every visual in both example games is rectangles, circles, triangles and text, without a single image file. Look at `Player.render` in `examples/platformer/entities/Player.js`: the body, the highlight, the eyes and the pupils are all `r.rect` calls.
 
 ## Transparency and transforms
 

@@ -13,6 +13,10 @@ All notable changes to this project are documented here. The format follows [Kee
 - `Debug#shows(entity)`: whether the overlay draws an entity.
 - The overlay's entity line now reads `entities N (shown M)`, and the panel widens to fit its longest line.
 
+### Changed
+
+- The Breakout and platformer examples are split into one entity or scene per file, with shared `config.js`, `audio.js` and level data modules.
+
 ### Fixed
 
 - The debug overlay drew circle hitboxes as boxes. It now draws them as circles, matching `Collision`.

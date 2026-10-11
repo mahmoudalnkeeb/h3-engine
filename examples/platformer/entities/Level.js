@@ -1,6 +1,6 @@
-import { Collision, Entity, Rect } from '../../src/index.js';
+import { Collision, Entity, Rect } from '../../../src/index.js';
+import { T } from '../config.js';
 
-export const T = 16;
 const SPAWN_CHARS = 'PeoF';
 
 /**

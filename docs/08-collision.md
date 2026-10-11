@@ -77,7 +77,7 @@ else if (side === 'left') ball.vel.x = -Math.abs(ball.vel.x);
 else if (side === 'right') ball.vel.x = Math.abs(ball.vel.x);
 ```
 
-That's straight from the Breakout ball (`examples/breakout/entities.js`). Using `Math.abs` instead of just flipping the sign (`vel.y = -vel.y`) is deliberate. If the ball touches the same brick on two steps in a row, flipping twice would send it back into the brick. With `Math.abs` it always ends up heading away.
+That's straight from the Breakout ball (`examples/breakout/entities/Ball.js`). Using `Math.abs` instead of just flipping the sign (`vel.y = -vel.y`) is deliberate. If the ball touches the same brick on two steps in a row, flipping twice would send it back into the brick. With `Math.abs` it always ends up heading away.
 
 ## Platformers: move one axis at a time
 
@@ -103,7 +103,7 @@ moveAndCollide(entity, dt) {
 }
 ```
 
-Now a sideways push can only come from actually walking sideways into something. The real version, with one-way platforms and tile lookups, is `Level.moveAndCollide` in `examples/platformer/Level.js`. It's about 40 lines and worth reading.
+Now a sideways push can only come from actually walking sideways into something. The real version, with one-way platforms and tile lookups, is `Level.moveAndCollide` in `examples/platformer/entities/Level.js`. It's about 40 lines and worth reading.
 
 This is also why the platformer `Player` doesn't call `super.update(dt)`. The default update moves both axes at once, and here we need them separate.
 

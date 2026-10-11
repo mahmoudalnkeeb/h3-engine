@@ -74,7 +74,7 @@ audio.tone({ freq: 440, to: 80, duration: 0.6, type: 'sawtooth', volume: 0.15 })
 | `type` | The waveform: `'square'` (buzzy, retro), `'triangle'` (soft), `'sawtooth'` (harsh), `'sine'` (pure). |
 | `volume` | 0 to 1. Keep effects around 0.1 to 0.2; it adds up fast. |
 
-Rising pitch reads as positive (jump, pickup, power-up). Falling pitch reads as negative (damage, death). A quick run of rising notes makes a decent victory jingle; see `levelClear` in `examples/breakout/scenes.js`.
+Rising pitch reads as positive (jump, pickup, power-up). Falling pitch reads as negative (damage, death). A quick run of rising notes makes a decent victory jingle; see `fanfare` in `examples/breakout/audio.js`.
 
 It's a great way to prototype. Swap in real sound files later if you want.
 

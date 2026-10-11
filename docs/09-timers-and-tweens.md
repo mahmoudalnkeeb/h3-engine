@@ -111,7 +111,7 @@ this.tween(target, props, duration, ease, {
 });
 ```
 
-Delays are how Breakout makes its bricks cascade in one after another: each brick gets a slightly bigger delay than the one before it. See `buildLevel` in `examples/breakout/scenes.js`.
+Delays are how Breakout makes its bricks cascade in one after another: each brick gets a slightly bigger delay than the one before it. See `buildLevel` in `examples/breakout/scenes/PlayScene.js`.
 
 Start values are read when the tween actually starts, after the delay, not when you create it. So if something else moves the object during the delay, the tween starts from wherever it ended up.
 

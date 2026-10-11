@@ -85,7 +85,7 @@ Use `x`/`y` for UI (did they click the button at the top of the screen?). Use `w
 
 Only the first finger is tracked. Multi-touch isn't supported yet.
 
-The Breakout paddle shows a nice pattern for supporting mouse and keyboard together: if a movement key is held, use it; otherwise, if the pointer moved since last step, follow the pointer. That way neither input fights the other. Look at `Paddle.update` in `examples/breakout/entities.js`.
+The Breakout paddle shows a nice pattern for supporting mouse and keyboard together: if a movement key is held, use it; otherwise, if the pointer moved since last step, follow the pointer. That way neither input fights the other. Look at `Paddle.update` in `examples/breakout/entities/Paddle.js`.
 
 ## Things the input system does for you
 

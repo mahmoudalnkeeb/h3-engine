@@ -1,40 +1,15 @@
-import { Collision, Pool, Scene } from '../../src/index.js';
-import { Backdrop, Coin, Flag, H, JUMP, Particle, Player, Slime, W } from './entities.js';
-import { Level } from './Level.js';
-import { LEVELS } from './levels.js';
-
-const START = ['Space', 'Enter'];
-const PAUSE = ['KeyP', 'Escape'];
-const FONT = 'monospace';
-
-/** Draw text with a 1px drop shadow so it reads over any background. */
-const label = (r, str, x, y, { size = 8, color = '#fff', align = 'center' } = {}) => {
-  const font = `bold ${size}px ${FONT}`;
-  r.text(str, x + 1, y + 1, { font, color: 'rgba(0,0,0,0.5)', align });
-  r.text(str, x, y, { font, color, align });
-};
-
-export class TitleScene extends Scene {
-  enter() {
-    this.t = 0;
-    this.add(new Backdrop());
-  }
-
-  update(dt, { input }) {
-    this.t += dt;
-    this.camera.x += dt * 20; // drift the backdrop
-    if (input.justPressed(START)) this.game.scenes.switch('play');
-  }
-
-  render(r) {
-    r.rect(0, H - 24, W, 24, '#8b5a2b');
-    r.rect(0, H - 24, W, 4, '#5ec44a');
-    label(r, 'PIXEL HOP', W / 2, 44, { size: 24, color: '#ff5e5b' });
-    label(r, 'made with h3-engine', W / 2, 74, { size: 8, color: '#1d3b5c' });
-    if (Math.floor(this.t * 2) % 2 === 0) label(r, 'PRESS SPACE TO START', W / 2, 104, { size: 10 });
-    label(r, 'ARROWS/WASD move   SPACE/Z jump   P pause', W / 2, 136, { size: 8, color: '#1d3b5c' });
-  }
-}
+import { Collision, Pool, Scene } from '../../../src/index.js';
+import { fanfare, sfx } from '../audio.js';
+import { JUMP, PAUSE, W } from '../config.js';
+import { Backdrop } from '../entities/Backdrop.js';
+import { Coin } from '../entities/Coin.js';
+import { Flag } from '../entities/Flag.js';
+import { Level } from '../entities/Level.js';
+import { Particle } from '../entities/Particle.js';
+import { Player } from '../entities/Player.js';
+import { Slime } from '../entities/Slime.js';
+import { LEVELS } from '../levels.js';
+import { label } from '../ui.js';
 
 export class PlayScene extends Scene {
   enter({ level = 0, lives = 3, score = 0, coins = 0 } = {}) {
@@ -77,7 +52,7 @@ export class PlayScene extends Scene {
       coin.destroy();
       this.coins++;
       this.score += 10;
-      this.sfx('coin');
+      sfx(this.ctx.audio, 'coin');
       this.burst(coin.cx, coin.cy, '#ffd166', 6);
     });
 
@@ -89,7 +64,7 @@ export class PlayScene extends Scene {
         enemy.destroy();
         p.jump(input.isDown(JUMP) ? 300 : 200);
         this.score += 100;
-        this.sfx('stomp');
+        sfx(this.ctx.audio, 'stomp');
         this.burst(enemy.cx, enemy.cy, '#7bd389', 10);
         this.camera.shake(2, 0.15);
       } else {
@@ -118,7 +93,7 @@ export class PlayScene extends Scene {
     p.z = 10; // in front of everything while falling off screen
     this.camera.follow(null);
     this.camera.shake(4, 0.3);
-    this.sfx('die');
+    sfx(this.ctx.audio, 'die');
     this.lives--;
     this.timer.after(1.6, () => {
       if (this.lives > 0) this.game.scenes.switch('play', { ...this.entry, lives: this.lives });
@@ -132,9 +107,7 @@ export class PlayScene extends Scene {
     this.player.won = true;
     this.score += 500;
     this.tween(this.flag, { lowered: 1 }, 0.8, 'quadOut');
-    [523, 659, 784, 1047].forEach((freq, i) => {
-      this.timer.after(i * 0.12, () => this.ctx.audio.tone({ freq, duration: 0.15, type: 'triangle' }));
-    });
+    fanfare(this.timer, this.ctx.audio);
     this.timer.after(2.2, () => {
       const next = this.levelIndex + 1;
       const data = { level: next, lives: this.lives, score: this.score, coins: this.coins };
@@ -143,13 +116,6 @@ export class PlayScene extends Scene {
     });
   }
 
-  sfx(kind) {
-    const audio = this.ctx.audio;
-    if (kind === 'jump') audio.tone({ freq: 300, to: 600, duration: 0.1, volume: 0.1 });
-    else if (kind === 'coin') audio.tone({ freq: 988, to: 1319, duration: 0.08, volume: 0.1 });
-    else if (kind === 'stomp') audio.tone({ freq: 220, to: 80, duration: 0.12, volume: 0.15 });
-    else if (kind === 'die') audio.tone({ freq: 440, to: 80, duration: 0.6, type: 'sawtooth', volume: 0.15 });
-  }
 
   render(r) {
     r.rect(0, 0, W, 14, 'rgba(0,0,0,0.35)');
@@ -163,51 +129,5 @@ export class PlayScene extends Scene {
       r.alpha = 1;
     }
     if (this.state === 'won') label(r, 'COURSE CLEAR!', W / 2, 60, { size: 16, color: '#ffd166' });
-  }
-}
-
-export class PauseScene extends Scene {
-  update(_dt, { input }) {
-    if (input.justPressed([...PAUSE, ...START])) this.game.scenes.pop();
-  }
-
-  render(r) {
-    r.rect(0, 0, W, H, 'rgba(10, 20, 40, 0.6)');
-    label(r, 'PAUSED', W / 2, H / 2 - 14, { size: 16 });
-    label(r, 'P to resume', W / 2, H / 2 + 8, { size: 8, color: '#c0d0ff' });
-  }
-}
-
-class EndScene extends Scene {
-  enter({ score = 0, coins = 0 } = {}) {
-    this.score = score;
-    this.coins = coins;
-    this.ready = false;
-    this.timer.after(0.8, () => (this.ready = true));
-    this.add(new Backdrop());
-  }
-
-  update(dt, { input }) {
-    this.camera.x += dt * 20;
-    if (this.ready && input.justPressed(START)) this.game.scenes.switch('title');
-  }
-
-  renderEnd(r, title, color) {
-    label(r, title, W / 2, 46, { size: 20, color });
-    label(r, `SCORE ${this.score}`, W / 2, 86, { size: 10 });
-    label(r, `COINS ${this.coins}`, W / 2, 102, { size: 10, color: '#ffd166' });
-    if (this.ready) label(r, 'PRESS SPACE', W / 2, 136, { size: 8, color: '#1d3b5c' });
-  }
-}
-
-export class GameOverScene extends EndScene {
-  render(r) {
-    this.renderEnd(r, 'GAME OVER', '#ff5e5b');
-  }
-}
-
-export class WinScene extends EndScene {
-  render(r) {
-    this.renderEnd(r, 'YOU WIN!', '#ffd166');
   }
 }

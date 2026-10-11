@@ -217,7 +217,7 @@ Compare what you have with `examples/dodge/main.js`. If something doesn't work, 
 Some things to try next, roughly in order of difficulty:
 
 - Make rocks fall faster as time goes on. Hint: `this.vel.y = rand(120, 220) + scene.time * 10`, but how does a Rock find out the time? (It can read `this.scene.time`.)
-- Add a high score that survives restarts. `localStorage` works fine; `examples/breakout/scenes.js` does exactly this.
+- Add a high score that survives restarts. `localStorage` works fine; `examples/breakout/storage.js` does exactly this.
 - Add a title screen scene that shows before `'play'`.
 - Play a sound when you get hit: `this.ctx.audio.tone({ freq: 200, to: 60, duration: 0.4 })`. See [Assets and audio](10-assets-and-audio.md).
 - Shake the screen on hit: `this.camera.shake(6, 0.3)`. Note that you'll have to delay the scene switch to actually see it, which is a good reason to read [Timers and tweens](09-timers-and-tweens.md).

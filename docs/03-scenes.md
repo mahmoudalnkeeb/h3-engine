@@ -62,7 +62,7 @@ The platformer uses this for its "die and retry" logic. When the player dies, it
 this.game.scenes.switch('play', { ...this.entry, lives: this.lives });
 ```
 
-Because a switch builds a brand new scene, every coin and enemy comes back automatically. Look for `this.entry` in `examples/platformer/scenes.js`.
+Because a switch builds a brand new scene, every coin and enemy comes back automatically. Look for `this.entry` in `examples/platformer/scenes/PlayScene.js`.
 
 ## The stack: push and pop
 
@@ -82,7 +82,7 @@ Scenes live on a stack. `push` puts a new scene on top; `pop` removes the top on
 - Only the top scene updates. That's why the level freezes.
 - When you `pop`, the scene underneath gets `resume(data)`, in case it wants to react.
 
-The pause scene in `examples/breakout/scenes.js` is about ten lines: a translucent rectangle over the whole screen, some text, and a `pop()` on keypress.
+The pause scene in `examples/breakout/scenes/PauseScene.js` is about ten lines: a translucent rectangle over the whole screen, some text, and a `pop()` on keypress.
 
 `switch` clears the whole stack, so switching to `'title'` from a pause menu leaves nothing behind.
 

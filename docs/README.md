@@ -30,3 +30,16 @@ npm run dev
 ```
 
 Then open http://localhost:5173/examples/. There are three games there. `dodge` is the one from the first page of this guide. `breakout` and `platformer` are bigger, and most pages here point at them for real-world examples. Reading their source alongside the guide is the fastest way to learn the engine.
+
+`breakout` and `platformer` share a layout you can copy for your own game:
+
+```
+main.js        creates the Game and registers the scenes
+config.js      screen size, input bindings and tuning numbers
+levels.js      level data
+audio.js       sound effects, synthesized with audio.tone
+entities/      one Entity class per file
+scenes/        one Scene class per file
+```
+
+Each game also has a small helper module or two (`ui.js` for shadowed text in the platformer, `storage.js` for the saved best score in Breakout). Entities and scenes import what they need from `config.js` instead of hard-coding numbers, so tuning the game means editing one file.
