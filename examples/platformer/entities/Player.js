@@ -78,7 +78,8 @@ export class Player extends Entity {
     super.drawDebug(r, color, lineWidth);
     // Velocity, scaled down so a full-speed run is about one tile long.
     r.line(this.cx, this.cy, this.cx + this.vel.x * 0.1, this.cy + this.vel.y * 0.1, '#ff0', lineWidth);
-    if (this.onGround) r.line(this.pos.x, this.pos.y + this.h, this.pos.x + this.w, this.pos.y + this.h, '#0ff', lineWidth);
+    if (this.onGround)
+      r.line(this.pos.x, this.pos.y + this.h, this.pos.x + this.w, this.pos.y + this.h, '#0ff', lineWidth);
   }
 
   render(r) {

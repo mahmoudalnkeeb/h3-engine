@@ -126,7 +126,6 @@ export class PlayScene extends Scene {
     );
   }
 
-
   render(r) {
     r.rect(0, 0, W, TOP, '#1b1b2f');
     r.rect(0, TOP - 2, W, 2, '#33335a');
