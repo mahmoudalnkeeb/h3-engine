@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/mahmoudalnkeeb/h3-engine/security/advisories/new
+    about: Please report security problems privately, not as an issue.
+  - name: Read the guide
+    url: https://github.com/mahmoudalnkeeb/h3-engine/tree/main/docs
+    about: Many questions are answered in the guide, including a list of common mistakes.

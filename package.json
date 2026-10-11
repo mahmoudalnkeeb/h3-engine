@@ -1,0 +1,55 @@
+{
+  "name": "h3-engine",
+  "version": "0.1.0",
+  "description": "Minimal and lightweight HTML canvas game engine.",
+  "keywords": [
+    "game-engine",
+    "canvas",
+    "2d",
+    "gamedev",
+    "html5"
+  ],
+  "license": "MIT",
+  "author": "Mahmoud Alnakeeb",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mahmoudalnkeeb/h3-engine.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mahmoudalnkeeb/h3-engine/issues"
+  },
+  "homepage": "https://github.com/mahmoudalnkeeb/h3-engine#readme",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "type": "module",
+  "main": "./dist/h3-engine.js",
+  "module": "./dist/h3-engine.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/h3-engine.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "dev": "node scripts/serve.js",
+    "build": "node scripts/build.js && tsc -p tsconfig.types.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "typecheck": "tsc -p tsconfig.types.json --noEmit --checkJs"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}
