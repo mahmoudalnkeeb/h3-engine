@@ -1,7 +1,7 @@
 import { Assets } from '../platform/Assets.js';
 import { Audio } from '../platform/Audio.js';
 import { Input } from '../platform/Input.js';
-import { Renderer } from '../render/Renderer.js';
+import { CanvasRenderer } from '../render/canvas/CanvasRenderer.js';
 import { Debug } from '../util/Debug.js';
 import { Events } from './Events.js';
 import { Loop } from './Loop.js';
@@ -14,6 +14,7 @@ import { SceneManager } from './SceneManager.js';
  * @property {number} [height=360] Logical height in pixels.
  * @property {import('../render/Renderer.js').ScaleMode} [scale='fit']
  * @property {string} [background='#000'] CSS color used to clear each frame.
+ * @property {new (options: import('../render/Renderer.js').RendererOptions) => Renderer} [renderer=CanvasRenderer] Rendering backend class.
  * @property {number} [step=1/60] Seconds per fixed update.
  * @property {boolean} [debug=false] Show the debug overlay at start. Toggle with the backquote key.
  */
@@ -30,6 +31,8 @@ import { SceneManager } from './SceneManager.js';
  * @property {import('./Scene.js').Scene | null} scene The top scene.
  * @property {import('../render/Camera.js').Camera | null} camera The top scene's camera.
  */
+
+/** @typedef {import('../render/Renderer.js').Renderer} Renderer */
 
 const LOADING_BAR_COLOR = '#fff';
 
@@ -66,6 +69,7 @@ export class Game {
     height = 360,
     scale = 'fit',
     background = '#000',
+    renderer: RendererClass = CanvasRenderer,
     step = 1 / 60,
     debug = false,
   } = {}) {
@@ -76,7 +80,7 @@ export class Game {
     this._stepping = false;
 
     this.events = new Events();
-    this.renderer = new Renderer({ canvas, width, height, scale, background });
+    this.renderer = new RendererClass({ canvas, width, height, scale, background });
     this.audio = new Audio();
     this.assets = new Assets({ audio: this.audio });
     this.audio.assets = this.assets;
@@ -181,10 +185,11 @@ export class Game {
 
   _render(alpha) {
     const r = this.renderer;
-    r.clear();
+    r.beginFrame();
     if (this.scenes.loading) this._renderLoading(r);
     else for (const scene of this.scenes.stack) scene._draw(r, alpha);
     this.debug.render(r);
+    r.endFrame();
   }
 
   _renderLoading(r) {

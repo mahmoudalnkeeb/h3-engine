@@ -1,3 +1,5 @@
+import { Viewport } from './Viewport.js';
+
 /**
  * How the logical resolution is scaled to the window:
  * `'fit'` scales smoothly to the largest size that fits, `'pixel'` scales by whole
@@ -18,8 +20,8 @@
  * @typedef {object} TextOptions
  * @property {string} [font='16px sans-serif'] CSS font shorthand.
  * @property {string} [color='#fff']
- * @property {CanvasTextAlign} [align='left']
- * @property {CanvasTextBaseline} [baseline='top']
+ * @property {'left' | 'right' | 'center' | 'start' | 'end'} [align='left']
+ * @property {'top' | 'middle' | 'bottom' | 'alphabetic' | 'hanging' | 'ideographic'} [baseline='top']
  */
 
 /**
@@ -40,7 +42,9 @@
  */
 
 /**
- * @typedef {CanvasImageSource & { width: number, height: number }} ImageLike
+ * A decoded image, as returned by `Assets`. Each backend converts it to its own
+ * representation (Canvas draws it directly; a GPU backend would cache a texture per image).
+ * @typedef {{ width: number, height: number }} ImageLike
  */
 
 /**
@@ -49,34 +53,22 @@
  */
 
 const NO_OPTIONS = {};
-const FULL_CIRCLE = Math.PI * 2;
 
-const resolveCanvas = (canvas) => {
-  if (typeof canvas === 'string') {
-    const found = document.querySelector(canvas);
-    if (!found) throw new Error(`Canvas "${canvas}" not found`);
-    return found;
-  }
-  if (canvas) return canvas;
-  const created = document.createElement('canvas');
-  document.body.appendChild(created);
-  return created;
-};
-
-const fitScale = (mode, width, height, dpr) => {
-  if (mode === 'none') return 1;
-  const scale = Math.min(window.innerWidth / width, window.innerHeight / height);
-  if (mode !== 'pixel') return scale;
-  const wholeDevicePixels = Math.max(1, Math.floor(scale * dpr));
-  return wholeDevicePixels / dpr;
+const notImplemented = (name) => {
+  throw new Error(`Renderer backend does not implement ${name}()`);
 };
 
 /**
- * Canvas 2D drawing in logical pixels. Handles devicePixelRatio and window
- * scaling so game code never deals with physical pixels.
+ * Drawing in logical pixels, independent of the graphics API. Game code only
+ * uses the methods declared here; backends such as {@link CanvasRenderer}
+ * implement them. Backend-specific extras (e.g. `CanvasRenderer#ctx`) live on
+ * the backend class.
  *
  * Draw calls use the current transform: world space inside entity `render`,
  * screen space inside a scene's `render`.
+ *
+ * Backends must call {@link Renderer#resize} at the end of their constructor,
+ * once their context exists.
  */
 export class Renderer {
   /**
@@ -84,50 +76,42 @@ export class Renderer {
    * @throws {Error} If `canvas` is a selector that matches nothing.
    */
   constructor({ canvas, width, height, scale = 'fit', background = '#000' }) {
-    /** @type {HTMLCanvasElement} */
-    this.canvas = resolveCanvas(canvas);
-    /** Raw context for anything not wrapped here. Coordinates are still logical pixels. @type {CanvasRenderingContext2D} */
-    this.ctx = this.canvas.getContext('2d');
+    this.viewport = new Viewport({ canvas, width, height, scale });
     this.width = width;
     this.height = height;
     this.scaleMode = scale;
     this.background = background;
-    /** CSS pixels per logical pixel after the last resize. */
-    this.pixelScale = 1;
     /** Called after every resize. @type {(() => void) | null} */
     this.onResize = null;
-    this._baseScaleX = 1;
-    this._baseScaleY = 1;
     this._imageRegion = { image: null, sx: 0, sy: 0, sw: 0, sh: 0, originX: 0, originY: 0 };
-    this._onWindowResize = () => this.resize();
-    this.canvas.style.touchAction = 'none';
-    this.resize();
+    this.viewport.onResize = () => {
+      this._applyResize();
+      this.onResize?.();
+    };
+  }
+
+  /** @type {HTMLCanvasElement} */
+  get canvas() {
+    return this.viewport.canvas;
+  }
+
+  /** CSS pixels per logical pixel after the last resize. */
+  get pixelScale() {
+    return this.viewport.pixelScale;
   }
 
   /** Start resizing with the window. Called by {@link Game#start}. */
   attach() {
-    window.addEventListener('resize', this._onWindowResize);
+    this.viewport.attach();
   }
 
   detach() {
-    window.removeEventListener('resize', this._onWindowResize);
+    this.viewport.detach();
   }
 
   /** Recompute the canvas size from the window size and devicePixelRatio. */
   resize() {
-    const { width, height, canvas } = this;
-    const dpr = window.devicePixelRatio || 1;
-    const scale = fitScale(this.scaleMode, width, height, dpr);
-    this.pixelScale = scale;
-    canvas.width = Math.round(width * scale * dpr);
-    canvas.height = Math.round(height * scale * dpr);
-    canvas.style.width = `${width * scale}px`;
-    canvas.style.height = `${height * scale}px`;
-    this._baseScaleX = canvas.width / width;
-    this._baseScaleY = canvas.height / height;
-    this.ctx.imageSmoothingEnabled = this.scaleMode !== 'pixel';
-    this._resetTransform();
-    this.onResize?.();
+    this.viewport.resize();
   }
 
   /**
@@ -137,119 +121,17 @@ export class Renderer {
    * @param {{ x: number, y: number }} [out] Object to write into instead of allocating.
    * @returns {{ x: number, y: number }}
    */
-  toLogical(clientX, clientY, out = { x: 0, y: 0 }) {
-    const bounds = this.canvas.getBoundingClientRect();
-    out.x = ((clientX - bounds.left) * this.width) / bounds.width;
-    out.y = ((clientY - bounds.top) * this.height) / bounds.height;
-    return out;
+  toLogical(clientX, clientY, out) {
+    return this.viewport.toLogical(clientX, clientY, out);
   }
 
-  /**
-   * Reset the transform and alpha, then fill the screen.
-   * @param {string} [color] Defaults to the game's background.
-   */
-  clear(color = this.background) {
-    this._resetTransform();
-    this.ctx.globalAlpha = 1;
-    this.rect(0, 0, this.width, this.height, color);
+  /** Start a frame. Called by the game before any scene draws. */
+  beginFrame() {
+    this.clear();
   }
 
-  /**
-   * @param {number} x
-   * @param {number} y
-   * @param {number} w
-   * @param {number} h
-   * @param {string} color
-   */
-  rect(x, y, w, h, color) {
-    this.ctx.fillStyle = color;
-    this.ctx.fillRect(x, y, w, h);
-  }
-
-  /**
-   * @param {number} x
-   * @param {number} y
-   * @param {number} w
-   * @param {number} h
-   * @param {string} color
-   * @param {number} [lineWidth=1]
-   */
-  strokeRect(x, y, w, h, color, lineWidth = 1) {
-    this._setStroke(color, lineWidth);
-    this.ctx.strokeRect(x, y, w, h);
-  }
-
-  /**
-   * @param {number} x Center.
-   * @param {number} y Center.
-   * @param {number} radius
-   * @param {string} color
-   */
-  circle(x, y, radius, color) {
-    this.ctx.fillStyle = color;
-    this._circlePath(x, y, radius);
-    this.ctx.fill();
-  }
-
-  /**
-   * @param {number} x Center.
-   * @param {number} y Center.
-   * @param {number} radius
-   * @param {string} color
-   * @param {number} [lineWidth=1]
-   */
-  strokeCircle(x, y, radius, color, lineWidth = 1) {
-    this._setStroke(color, lineWidth);
-    this._circlePath(x, y, radius);
-    this.ctx.stroke();
-  }
-
-  /**
-   * @param {number} x1
-   * @param {number} y1
-   * @param {number} x2
-   * @param {number} y2
-   * @param {string} color
-   * @param {number} [lineWidth=1]
-   */
-  line(x1, y1, x2, y2, color, lineWidth = 1) {
-    const ctx = this.ctx;
-    this._setStroke(color, lineWidth);
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-  }
-
-  /**
-   * Filled polygon.
-   * @param {number[]} points Flat coordinate list: `[x0, y0, x1, y1, ...]`.
-   * @param {string} color
-   */
-  poly(points, color) {
-    const ctx = this.ctx;
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.moveTo(points[0], points[1]);
-    for (let i = 2; i < points.length; i += 2) ctx.lineTo(points[i], points[i + 1]);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  /**
-   * @param {string} str
-   * @param {number} x
-   * @param {number} y Top of the text unless `baseline` says otherwise.
-   * @param {TextOptions} [options]
-   */
-  text(str, x, y, options = NO_OPTIONS) {
-    const ctx = this.ctx;
-    ctx.font = options.font ?? '16px sans-serif';
-    ctx.fillStyle = options.color ?? '#fff';
-    ctx.textAlign = options.align ?? 'left';
-    ctx.textBaseline = options.baseline ?? 'top';
-    ctx.fillText(str, x, y);
-  }
+  /** Finish a frame. Called by the game after everything is drawn. Batching backends flush here. */
+  endFrame() {}
 
   /**
    * Draw an image or a region of one, anchored at `x, y`.
@@ -270,89 +152,144 @@ export class Renderer {
     this.sprite(region, x, y, options);
   }
 
+  /** React to a new canvas size (backing store already resized). */
+  _applyResize() {
+    notImplemented('_applyResize');
+  }
+
+  /**
+   * Reset the transform and alpha, then fill the screen.
+   * @param {string} [_color] Defaults to the game's background.
+   */
+  clear(_color) {
+    notImplemented('clear');
+  }
+
+  /**
+   * @param {number} _x
+   * @param {number} _y
+   * @param {number} _w
+   * @param {number} _h
+   * @param {string} _color
+   */
+  rect(_x, _y, _w, _h, _color) {
+    notImplemented('rect');
+  }
+
+  /**
+   * @param {number} _x
+   * @param {number} _y
+   * @param {number} _w
+   * @param {number} _h
+   * @param {string} _color
+   * @param {number} [_lineWidth=1]
+   */
+  strokeRect(_x, _y, _w, _h, _color, _lineWidth) {
+    notImplemented('strokeRect');
+  }
+
+  /**
+   * @param {number} _x Center.
+   * @param {number} _y Center.
+   * @param {number} _radius
+   * @param {string} _color
+   */
+  circle(_x, _y, _radius, _color) {
+    notImplemented('circle');
+  }
+
+  /**
+   * @param {number} _x Center.
+   * @param {number} _y Center.
+   * @param {number} _radius
+   * @param {string} _color
+   * @param {number} [_lineWidth=1]
+   */
+  strokeCircle(_x, _y, _radius, _color, _lineWidth) {
+    notImplemented('strokeCircle');
+  }
+
+  /**
+   * @param {number} _x1
+   * @param {number} _y1
+   * @param {number} _x2
+   * @param {number} _y2
+   * @param {string} _color
+   * @param {number} [_lineWidth=1]
+   */
+  line(_x1, _y1, _x2, _y2, _color, _lineWidth) {
+    notImplemented('line');
+  }
+
+  /**
+   * Filled polygon.
+   * @param {number[]} _points Flat coordinate list: `[x0, y0, x1, y1, ...]`.
+   * @param {string} _color
+   */
+  poly(_points, _color) {
+    notImplemented('poly');
+  }
+
+  /**
+   * @param {string} _str
+   * @param {number} _x
+   * @param {number} _y Top of the text unless `baseline` says otherwise.
+   * @param {TextOptions} [_options]
+   */
+  text(_str, _x, _y, _options) {
+    notImplemented('text');
+  }
+
   /**
    * Draw a sprite anchored at `x, y`. `originX`/`originY` in `options` override the sprite's own.
-   * @param {SpriteRegion} sprite
-   * @param {number} x
-   * @param {number} y
-   * @param {DrawOptions} [options] Source-rectangle options are ignored.
+   * @param {SpriteRegion} _sprite
+   * @param {number} _x
+   * @param {number} _y
+   * @param {DrawOptions} [_options] Source-rectangle options are ignored.
    */
-  sprite(sprite, x, y, options = NO_OPTIONS) {
-    const ctx = this.ctx;
-    const w = options.w ?? sprite.sw;
-    const h = options.h ?? sprite.sh;
-    const anchorX = (options.originX ?? sprite.originX) * w;
-    const anchorY = (options.originY ?? sprite.originY) * h;
-    const { image, sx, sy, sw, sh } = sprite;
-
-    if (!needsTransform(options)) {
-      ctx.drawImage(image, sx, sy, sw, sh, x - anchorX, y - anchorY, w, h);
-      return;
-    }
-
-    ctx.save();
-    ctx.translate(x, y);
-    if (options.rotation) ctx.rotate(options.rotation);
-    if (options.alpha !== undefined) ctx.globalAlpha *= options.alpha;
-    ctx.translate(w / 2 - anchorX, h / 2 - anchorY);
-    if (options.flipX || options.flipY) ctx.scale(options.flipX ? -1 : 1, options.flipY ? -1 : 1);
-    ctx.drawImage(image, sx, sy, sw, sh, -w / 2, -h / 2, w, h);
-    ctx.restore();
+  sprite(_sprite, _x, _y, _options) {
+    notImplemented('sprite');
   }
 
   /** Save transform, alpha and styles. Pair every call with {@link Renderer#pop}. */
   push() {
-    this.ctx.save();
+    notImplemented('push');
   }
 
   pop() {
-    this.ctx.restore();
+    notImplemented('pop');
   }
 
   /**
-   * @param {number} x
-   * @param {number} y
+   * @param {number} _x
+   * @param {number} _y
    */
-  translate(x, y) {
-    this.ctx.translate(x, y);
+  translate(_x, _y) {
+    notImplemented('translate');
   }
 
-  /** @param {number} radians Clockwise, around the current origin. */
-  rotate(radians) {
-    this.ctx.rotate(radians);
+  /** @param {number} _radians Clockwise, around the current origin. */
+  rotate(_radians) {
+    notImplemented('rotate');
   }
 
   /**
-   * @param {number} x
-   * @param {number} [y=x]
+   * @param {number} _x
+   * @param {number} [_y=x]
    */
-  scale(x, y = x) {
-    this.ctx.scale(x, y);
+  scale(_x, _y) {
+    notImplemented('scale');
   }
 
-  /** Opacity (0..1) for subsequent draws. Persists until changed or restored by {@link Renderer#pop}. */
+  /**
+   * Opacity (0..1) for subsequent draws. Persists until changed or restored by {@link Renderer#pop}.
+   * @type {number}
+   */
   get alpha() {
-    return this.ctx.globalAlpha;
+    return notImplemented('alpha');
   }
 
-  set alpha(value) {
-    this.ctx.globalAlpha = value;
-  }
-
-  _resetTransform() {
-    this.ctx.setTransform(this._baseScaleX, 0, 0, this._baseScaleY, 0, 0);
-  }
-
-  _setStroke(color, lineWidth) {
-    this.ctx.strokeStyle = color;
-    this.ctx.lineWidth = lineWidth;
-  }
-
-  _circlePath(x, y, radius) {
-    this.ctx.beginPath();
-    this.ctx.arc(x, y, radius, 0, FULL_CIRCLE);
+  set alpha(_value) {
+    notImplemented('alpha');
   }
 }
-
-const needsTransform = (options) =>
-  Boolean(options.rotation || options.flipX || options.flipY || options.alpha !== undefined);

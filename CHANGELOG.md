@@ -6,6 +6,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- `Game` option `renderer`: the rendering backend class. Defaults to `CanvasRenderer`.
+- `CanvasRenderer`: the Canvas 2D backend, exported for typing and subclassing. `r.ctx` lives here.
+- `Renderer#beginFrame()` and `Renderer#endFrame()`: frame hooks the game calls around each render.
 - `Entity#debug`: set to `false` to hide an entity from the debug overlay.
 - `Entity#drawDebug(r, color, lineWidth)`: override to draw custom debug info, like velocity or sensors.
 - `Debug#ignoreTags`: hides every entity with one of these tags from the overlay.
@@ -15,6 +18,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed
 
+- `Renderer` is now an abstract base class that defines the drawing API. Its drawing methods throw unless a backend overrides them, so construct `CanvasRenderer` instead of `Renderer`. Canvas sizing moved into an internal `Viewport`.
+- `TextOptions.align` and `baseline` are typed as string unions instead of the DOM `CanvasTextAlign`/`CanvasTextBaseline` types.
 - The Breakout and platformer examples are split into one entity or scene per file, with shared `config.js`, `audio.js` and level data modules.
 
 ### Fixed

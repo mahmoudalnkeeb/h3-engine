@@ -13,6 +13,7 @@ export { Audio } from './platform/Audio.js';
 export { Input } from './platform/Input.js';
 export { Animation } from './render/Animation.js';
 export { Camera } from './render/Camera.js';
+export { CanvasRenderer } from './render/canvas/CanvasRenderer.js';
 export { Renderer } from './render/Renderer.js';
 export { Sprite } from './render/Sprite.js';
 export { SpriteSheet } from './render/SpriteSheet.js';

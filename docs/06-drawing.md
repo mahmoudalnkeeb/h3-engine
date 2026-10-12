@@ -133,4 +133,4 @@ Neither example game uses images yet, so this part of the engine is covered only
 
 ## The escape hatch
 
-`r.ctx` is the raw `CanvasRenderingContext2D`. If you need something the renderer doesn't wrap (gradients, shadows, clipping, `roundRect`), use it directly. Coordinates are still logical pixels, and the camera transform still applies. Wrap custom drawing in `r.push()`/`r.pop()` so your style changes don't leak into the next entity.
+`r.ctx` is the raw `CanvasRenderingContext2D`. It exists only on the default Canvas backend (`CanvasRenderer`); other backends won't have it. If you need something the renderer doesn't wrap (gradients, shadows, clipping, `roundRect`), use it directly. Coordinates are still logical pixels, and the camera transform still applies. Wrap custom drawing in `r.push()`/`r.pop()` so your style changes don't leak into the next entity.
