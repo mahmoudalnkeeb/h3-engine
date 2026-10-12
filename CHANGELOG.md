@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-12
+
+### Breaking
+
+- `new Renderer(...)` no longer draws: `Renderer` is now an abstract base. Construct `CanvasRenderer` instead, or let `Game` create the renderer as before. Game code that only uses `r.rect`, `r.text` and the other drawing methods is unaffected.
+
 ### Added
 
 - `Game` option `renderer`: the rendering backend class. Defaults to `CanvasRenderer`.
