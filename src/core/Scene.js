@@ -40,6 +40,10 @@ export class Scene {
     /** Live entities in draw order. Read-only: use {@link Scene#add} and {@link Entity#destroy}. @type {Entity[]} */
     this.entities = [];
     this.camera = new Camera(game ? game.width : 0, game ? game.height : 0);
+    /** Multiplies `dt` for entities, timers, tweens, the camera and {@link Scene#update}. 0 freezes the scene. */
+    this.timeScale = 1;
+    /** When true, scenes below this one on the stack aren't drawn. */
+    this.opaque = false;
     /** Timers that pause with the game and are discarded with the scene. */
     this.timer = new Timer();
     /** @type {Tween[]} */
@@ -55,9 +59,10 @@ export class Scene {
   /**
    * Load assets before {@link Scene#enter}. Returning a promise shows the loading screen until it settles.
    * @param {Assets} _assets
+   * @param {any} [_data] The same data `enter` will receive.
    * @returns {void | Promise<void>}
    */
-  preload(_assets) {}
+  preload(_assets, _data) {}
 
   /**
    * Called once when the scene starts, with the data passed to `switch` or `push`.
@@ -168,7 +173,8 @@ export class Scene {
     return tween;
   }
 
-  _step(dt) {
+  _step(realDt) {
+    const dt = realDt * this.timeScale;
     this._updating = true;
     this._updateEntities(dt);
     this.timer.update(dt);

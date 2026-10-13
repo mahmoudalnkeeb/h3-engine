@@ -33,6 +33,7 @@ export const fakeRenderer = () => {
       calls.push([name, ...args]);
   return {
     calls,
+    pixelScale: 1,
     push: record('push'),
     pop: record('pop'),
     translate: record('translate'),

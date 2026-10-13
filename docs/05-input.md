@@ -55,6 +55,15 @@ if (input.justPressed(JUMP)) this.jump();
 
 Define your controls as constants at the top of the file, like the examples do. Changing a control later is then a one-line edit.
 
+To let players remap controls, you need the next key they press, whatever it is. `input.pressedCodes` holds the codes pressed this step:
+
+```js
+const [code] = input.pressedCodes;
+if (code) this.bindings.jump = [code];
+```
+
+The set is reused every step, so read from it but don't keep a reference.
+
 ## Axes
 
 For left/right or up/down movement there's a shortcut:

@@ -43,6 +43,8 @@ export class Camera {
     this.shakeX = 0;
     /** Current shake offset in pixels. Read-only. */
     this.shakeY = 0;
+    /** Multiplies every {@link Camera#shake} intensity. Set below 1 to reduce shake, 0 to turn it off. */
+    this.shakeScale = 1;
     this._shakeTimeLeft = 0;
     this._shakeDuration = 0;
     this._shakeIntensity = 0;
@@ -89,12 +91,13 @@ export class Camera {
 
   /**
    * Random offset that fades out over `duration`. An overlapping shake keeps the stronger intensity.
-   * @param {number} [intensity=4] Maximum offset in pixels.
+   * @param {number} [intensity=4] Maximum offset in pixels, before {@link Camera#shakeScale}.
    * @param {number} [duration=0.3] Seconds.
    */
   shake(intensity = 4, duration = 0.3) {
+    const scaled = intensity * this.shakeScale;
     const alreadyShaking = this._shakeTimeLeft > 0;
-    this._shakeIntensity = alreadyShaking ? Math.max(intensity, this._shakeIntensity) : intensity;
+    this._shakeIntensity = alreadyShaking ? Math.max(scaled, this._shakeIntensity) : scaled;
     this._shakeDuration = duration;
     this._shakeTimeLeft = Math.max(this._shakeTimeLeft, duration);
   }

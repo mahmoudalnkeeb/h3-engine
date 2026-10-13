@@ -147,6 +147,16 @@ export class Input {
     return hasAny(this._released, keys);
   }
 
+  /**
+   * `KeyboardEvent.code`s pressed this step. Read it each step instead of keeping it: the set is reused.
+   * @type {ReadonlySet<string>}
+   * @example
+   * const [code] = input.pressedCodes; // the key to bind, if any
+   */
+  get pressedCodes() {
+    return this._pressed;
+  }
+
   /** @returns {boolean} True if any key was pressed this step. */
   anyPressed() {
     return this._pressed.size > 0;

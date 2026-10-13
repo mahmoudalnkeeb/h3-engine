@@ -115,6 +115,26 @@ describe('Scene entities', () => {
     scene._step(1 / 60);
     expect(order).toEqual(['entity', 'scene']);
   });
+
+  it('scales dt by timeScale for entities, timers, tweens and the update hook', () => {
+    const scene = new Scene(fakeGame());
+    const seen = [];
+    const e = new Entity();
+    e.update = (dt) => seen.push(dt);
+    scene.add(e);
+    scene.update = (dt) => seen.push(dt);
+    const fired = vi.fn();
+    scene.timer.after(0.5, fired);
+    const target = { x: 0 };
+    scene.tween(target, { x: 10 }, 1);
+    scene.timeScale = 0.5;
+    scene._step(0.5);
+    expect(seen).toEqual([0.25, 0.25]);
+    expect(fired).not.toHaveBeenCalled();
+    expect(target.x).toBe(2.5);
+    scene._step(0.5);
+    expect(fired).toHaveBeenCalledOnce();
+  });
 });
 
 describe('SceneManager', () => {
@@ -150,6 +170,34 @@ describe('SceneManager', () => {
     game.scenes.pop('back');
     expect(game.scenes.current).toBe(menu);
     expect(menu.resume).toHaveBeenCalledWith('back');
+  });
+
+  it('draws from the topmost opaque scene up', () => {
+    const game = fakeGame();
+    class Options extends Scene {
+      opaque = true;
+    }
+    game.scenes.add('menu', Menu).add('pause', Pause).add('options', Options);
+    game.scenes.switch('menu');
+    game.scenes.push('pause');
+    expect(game.scenes._firstDrawnIndex()).toBe(0);
+    game.scenes.push('options');
+    expect(game.scenes._firstDrawnIndex()).toBe(2);
+    game.scenes.push('pause');
+    expect(game.scenes._firstDrawnIndex()).toBe(2);
+  });
+
+  it('passes the switch data to preload as well as enter', () => {
+    const game = fakeGame();
+    const preload = vi.fn();
+    class Level extends Scene {
+      preload(assets, data) {
+        preload(assets, data);
+      }
+    }
+    game.scenes.add('level', Level);
+    game.scenes.switch('level', { level: 3 });
+    expect(preload).toHaveBeenCalledWith(game.assets, { level: 3 });
   });
 
   it('defers switches requested during a step', () => {

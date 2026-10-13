@@ -21,6 +21,9 @@ export class PlayScene extends Scene {
     this.entry = { level, lives, score, coins };
     /** 'play', 'dead' or 'won'. */
     this.state = 'play';
+    this.offHidden = this.game.on('hidden', () => {
+      if (this.game.scenes.current === this) this.game.scenes.push('pause');
+    });
     this.particles = new Pool(() => new Particle(), 60);
     this.game.debug.watch('particles', () => this.count('fx'));
     this.game.debug.watch('player', () => `${this.player.vel.x | 0},${this.player.vel.y | 0} ${this.state}`);
@@ -76,6 +79,7 @@ export class PlayScene extends Scene {
   }
 
   exit() {
+    this.offHidden();
     this.game.debug.unwatch('particles');
     this.game.debug.unwatch('player');
   }

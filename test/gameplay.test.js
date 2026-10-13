@@ -155,6 +155,19 @@ describe('Camera', () => {
     cam.update(0.2);
     expect(cam.shakeX).toBe(0);
   });
+
+  it('scales shake by shakeScale, 0 turning it off', () => {
+    const cam = new Camera(100, 100);
+    cam.shakeScale = 0;
+    cam.shake(5, 0.2);
+    cam.update(0.05);
+    expect(Math.abs(cam.shakeX)).toBe(0);
+    expect(Math.abs(cam.shakeY)).toBe(0);
+    cam.shakeScale = 0.5;
+    cam.shake(4, 0.2);
+    cam.update(0);
+    expect(Math.abs(cam.shakeX)).toBeLessThanOrEqual(2);
+  });
 });
 
 describe('SpriteSheet and Animation', () => {

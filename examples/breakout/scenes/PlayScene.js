@@ -17,6 +17,9 @@ export class PlayScene extends Scene {
     this.state = 'intro';
     this.particles = new Pool(() => new Particle(), 80);
     this.wideTimer = null;
+    this.offHidden = this.game.on('hidden', () => {
+      if (this.game.scenes.current === this) this.game.scenes.push('pause');
+    });
     this.paddle = this.add(new Paddle());
     this.buildLevel();
     this.serve();
@@ -43,6 +46,10 @@ export class PlayScene extends Scene {
         this.tween(brick, { alpha: 1 }, 0.25, 'linear', { delay });
       }
     });
+  }
+
+  exit() {
+    this.offHidden();
   }
 
   serve() {

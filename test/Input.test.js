@@ -35,6 +35,15 @@ describe('Input keyboard', () => {
     expect(input.justPressed('KeyA')).toBe(false);
   });
 
+  it('lists the codes pressed this step', () => {
+    const input = new Input();
+    input.keyDown('KeyQ');
+    input.poll();
+    expect([...input.pressedCodes]).toEqual(['KeyQ']);
+    input.poll();
+    expect(input.pressedCodes.size).toBe(0);
+  });
+
   it('accepts key lists and computes axes', () => {
     const input = new Input();
     input.keyDown('KeyD');
