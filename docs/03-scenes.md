@@ -8,7 +8,7 @@ Splitting a game this way stops one giant `if (state === 'menu') ... else if (st
 
 ```js
 class Level extends Scene {
-  preload(assets) {}       // load files this scene needs (optional)
+  preload(assets, data) {} // load files this scene needs (optional)
   enter(data) {}           // the scene starts
   update(dt, ctx) {}       // 60 times a second, after all entities updated
   render(r, alpha) {}      // every frame, after all entities drew
@@ -82,6 +82,14 @@ Scenes live on a stack. `push` puts a new scene on top; `pop` removes the top on
 - Only the top scene updates. That's why the level freezes.
 - When you `pop`, the scene underneath gets `resume(data)`, in case it wants to react.
 
+A scene that covers the whole screen can set `opaque = true`, and nothing below it draws. An options screen pushed over a pause menu needs this, or the pause menu's text shows through:
+
+```js
+class Options extends Scene {
+  opaque = true;
+}
+```
+
 The pause scene in `examples/breakout/scenes/PauseScene.js` is about ten lines: a translucent rectangle over the whole screen, some text, and a `pop()` on keypress.
 
 `switch` clears the whole stack, so switching to `'title'` from a pause menu leaves nothing behind.
@@ -115,6 +123,14 @@ class Level extends Scene {
 
 Assets are cached by key, so coming back to this scene later doesn't download anything again, and the loading bar flashes by. More in [Assets and audio](10-assets-and-audio.md).
 
+`preload` also receives the data passed to `switch` or `push`, the same object `enter` gets. Use it to load only what this run needs, like one level's files:
+
+```js
+async preload(assets, { level }) {
+  await assets.load({ json: { [`level${level}`]: `levels/${level}.json` } });
+}
+```
+
 If `preload` isn't async and returns nothing, the scene starts immediately.
 
 ## What a scene gives you
@@ -131,6 +147,8 @@ Inside any scene you can use:
 | `this.tween(...)` | Animate numbers over time. Same page. |
 | `this.add / find / first / count` | Working with entities. See [Entities](04-entities.md). |
 | `this.key` | The name this scene was registered under. |
+| `this.timeScale` | Multiplies `dt` for the whole scene: entities, timers, tweens and the camera. `0.5` is half speed, `0` freezes it. |
+| `this.opaque` | `true` stops scenes below this one from drawing. |
 
 ## A common mistake: state outside the scene
 

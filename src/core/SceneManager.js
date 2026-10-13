@@ -10,8 +10,9 @@
 const isPromise = (value) => value != null && typeof value.then === 'function';
 
 /**
- * Registers scenes by key and manages the scene stack. Every scene on the
- * stack renders, bottom to top; only the top one updates.
+ * Registers scenes by key and manages the scene stack. Scenes render bottom
+ * to top, starting from the topmost {@link Scene#opaque} one; only the top
+ * scene updates.
  *
  * Requests made during an update step are applied after the step. Each
  * `switch` or `push` creates a new scene instance.
@@ -123,7 +124,7 @@ export class SceneManager {
       scene.enter(data);
     };
 
-    const preloading = scene.preload(this.game.assets);
+    const preloading = scene.preload(this.game.assets, data);
     if (!isPromise(preloading)) {
       enter();
       return Promise.resolve();
@@ -142,6 +143,11 @@ export class SceneManager {
         throw error;
       },
     );
+  }
+
+  _firstDrawnIndex() {
+    for (let i = this.stack.length - 1; i > 0; i--) if (this.stack[i].opaque) return i;
+    return 0;
   }
 
   _syncContext() {

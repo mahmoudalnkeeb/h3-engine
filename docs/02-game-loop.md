@@ -42,7 +42,13 @@ If the browser stalls for 5 seconds (you switched tabs, or the laptop went to sl
 
 So the loop never pours more than 0.25 seconds per frame, which is at most 15 updates. After a long stall, the game just picks up where it was, slightly behind the clock. Nobody notices.
 
-The loop also pauses completely when the tab is hidden, and doesn't try to catch up when you come back.
+The loop also pauses completely when the tab is hidden, and doesn't try to catch up when you come back. The game emits `hidden` and `visible` when this happens, so you can open a pause menu for when the player returns:
+
+```js
+game.on('visible', () => {
+  if (game.scenes.current?.key === 'play') game.scenes.push('pause');
+});
+```
 
 ## What `alpha` is for
 

@@ -60,6 +60,8 @@ this.camera.shake(6, 0.3);   // up to 6 pixels, fading out over 0.3 seconds
 
 Shake is a random offset that gets smaller as time runs out. Small values go a long way: 2 for a stomp, 4 to 8 for taking damage or losing a life. If a new shake starts while one is running, the stronger of the two wins.
 
+Some players get motion sick from shake, so offer a setting. `camera.shakeScale` multiplies every shake: `0.5` for reduced, `0` for off. Set it once in your scene's `enter` and every `shake()` call respects it.
+
 Shaking moves the world but not your scene's `render` HUD, because the HUD draws in screen space. That's usually what you want.
 
 ## Zoom

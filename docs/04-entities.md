@@ -150,7 +150,7 @@ this.destroy();
 this.pool.release(this);
 ```
 
-Your entity needs a method that resets its state (here `spawn`), because a reused object still holds whatever values it had last time. Destroying and re-adding the same entity within one step is supported, so a particle can be released and picked up again immediately. Both example games' `Particle` classes show the whole pattern.
+Your entity needs a method that resets its state (here `spawn`), because a reused object still holds whatever values it had last time. Destroying and re-adding the same entity within one step is supported, so a particle can be released and picked up again immediately: at the end of a step the scene applies removes before adds, so the re-added entity stays. Both example games' `Particle` classes show the whole pattern.
 
 Pooled particles are still entities, so the debug overlay outlines them like everything else. Set `this.debug = false` in the particle's constructor to keep them out of it. [Debugging](11-debugging.md#hiding-things-from-the-overlay) covers this and other ways to customize the overlay.
 

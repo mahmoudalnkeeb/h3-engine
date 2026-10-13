@@ -3,6 +3,16 @@
  * @property {number} [volume=1] 0..1, multiplied by the master volume.
  * @property {boolean} [loop=false]
  * @property {number} [rate=1] Playback speed; also shifts pitch.
+ * @property {number} [loopStart] Seconds into the sound where a loop restarts. Needs `loop`.
+ * @property {number} [loopEnd] Seconds into the sound where a loop jumps back to `loopStart`. Needs `loop`.
+ * @property {string} [bus] Route through {@link Audio#bus} with this name instead of straight to master.
+ */
+
+/**
+ * A playing sound. Fade it with Web Audio ramps on `gain.gain`.
+ * @typedef {object} SoundHandle
+ * @property {AudioBufferSourceNode} source
+ * @property {GainNode} gain This sound's own volume, before its bus and the master volume.
  */
 
 /**
@@ -12,6 +22,7 @@
  * @property {number} [duration=0.1] Seconds.
  * @property {OscillatorType} [type='square']
  * @property {number} [volume=0.2] 0..1.
+ * @property {string} [bus] Route through {@link Audio#bus} with this name instead of straight to master.
  */
 
 const SILENT = 0.0001;
@@ -25,6 +36,8 @@ export class Audio {
   constructor() {
     this._ctx = null;
     this._master = null;
+    /** @type {Map<string, GainNode>} */
+    this._buses = new Map();
     this._volume = 1;
     this._muted = false;
     /** Where {@link Audio#play} looks up sounds by key. Set by the game. @type {import('./Assets.js').Assets | null} */
@@ -80,12 +93,32 @@ export class Audio {
   }
 
   /**
+   * A named gain node feeding the master volume, created on first use. Use one
+   * per group (music, sfx, ui) to set or fade the group's volume.
+   * @param {string} name
+   * @returns {GainNode | null} Null if Web Audio is unavailable.
+   * @example
+   * audio.bus('music').gain.value = 0.5;
+   */
+  bus(name) {
+    const ctx = this.ctx;
+    if (!ctx) return null;
+    let gain = this._buses.get(name);
+    if (!gain) {
+      gain = ctx.createGain();
+      gain.connect(this._master);
+      this._buses.set(name, gain);
+    }
+    return gain;
+  }
+
+  /**
    * @param {string | AudioBuffer} sound Asset key or decoded buffer.
    * @param {PlayOptions} [options]
-   * @returns {AudioBufferSourceNode | null} Handle for {@link Audio#stop}, or null if audio is unavailable.
+   * @returns {SoundHandle | null} Handle for {@link Audio#stop}, or null if audio is unavailable.
    * @throws {Error} If `sound` is a key that hasn't been loaded.
    */
-  play(sound, { volume = 1, loop = false, rate = 1 } = {}) {
+  play(sound, { volume = 1, loop = false, rate = 1, loopStart, loopEnd, bus } = {}) {
     const ctx = this.ctx;
     if (!ctx) return null;
     const buffer = typeof sound === 'string' ? this.assets?.sound(sound) : sound;
@@ -94,19 +127,22 @@ export class Audio {
     const source = ctx.createBufferSource();
     source.buffer = buffer;
     source.loop = loop;
+    if (loopStart !== undefined) source.loopStart = loopStart;
+    if (loopEnd !== undefined) source.loopEnd = loopEnd;
     source.playbackRate.value = rate;
-    source.connect(this._gainNode(volume)).connect(this._master);
+    const gain = this._gainNode(volume);
+    source.connect(gain).connect(this._output(bus));
     source.start();
-    return source;
+    return { source, gain };
   }
 
   /**
    * Stop a sound started with {@link Audio#play}. Ignores null and already-stopped handles.
-   * @param {AudioBufferSourceNode | null} handle
+   * @param {SoundHandle | null} handle
    */
   stop(handle) {
     try {
-      handle?.stop();
+      handle?.source.stop();
     } catch {
       return;
     }
@@ -118,7 +154,7 @@ export class Audio {
    * @example
    * audio.tone({ freq: 300, to: 600, duration: 0.1 }); // rising jump blip
    */
-  tone({ freq = 440, to, duration = 0.1, type = 'square', volume = 0.2 } = {}) {
+  tone({ freq = 440, to, duration = 0.1, type = 'square', volume = 0.2, bus } = {}) {
     const ctx = this.ctx;
     if (ctx?.state !== 'running') return;
     const now = ctx.currentTime;
@@ -133,7 +169,7 @@ export class Audio {
     gain.gain.setValueAtTime(volume, now);
     gain.gain.exponentialRampToValueAtTime(SILENT, end);
 
-    oscillator.connect(gain).connect(this._master);
+    oscillator.connect(gain).connect(this._output(bus));
     oscillator.start(now);
     oscillator.stop(end);
   }
@@ -145,6 +181,10 @@ export class Audio {
     this._master = this._ctx.createGain();
     this._master.connect(this._ctx.destination);
     this._applyVolume();
+  }
+
+  _output(busName) {
+    return busName === undefined ? this._master : this.bus(busName);
   }
 
   _gainNode(volume) {

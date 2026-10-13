@@ -54,6 +54,20 @@ const music = this.ctx.audio.play('music', { loop: true });
 this.ctx.audio.stop(music);
 ```
 
+`play` returns a handle with the sound's `source` node and its own `gain` node. Pass the handle to `stop`, or fade the sound with the standard Web Audio ramps:
+
+```js
+const { currentTime } = this.ctx.audio.ctx;
+music.gain.gain.setValueAtTime(music.gain.gain.value, currentTime);
+music.gain.gain.linearRampToValueAtTime(0, currentTime + 1);   // fade out over a second
+```
+
+A looping track usually has silence at the start or end, especially MP3s, which makes the loop click. `loopStart` and `loopEnd` (seconds) loop just the part in between:
+
+```js
+this.ctx.audio.play('music', { loop: true, loopStart: 0.05, loopEnd: 32.05 });
+```
+
 `rate` changes speed and pitch together. Randomizing it slightly (`rate: rand(0.9, 1.1)`) stops repeated sounds, like footsteps or coin pickups, from sounding mechanical.
 
 ## Sounds without any files
@@ -86,3 +100,14 @@ audio.muted = true;   // mute everything, keeping the volume setting
 ```
 
 A mute key is a nice touch: `if (input.justPressed('KeyM')) audio.muted = !audio.muted;`.
+
+For separate music and effects volumes, route sounds through named buses. `audio.bus(name)` creates a gain node on first use that feeds the master volume, and both `play` and `tone` take a `bus` option:
+
+```js
+audio.play('music', { loop: true, bus: 'music' });
+audio.tone({ freq: 600, bus: 'sfx' });
+
+audio.bus('music').gain.value = 0.4;   // a music volume slider
+```
+
+To duck the music under a sound effect, ramp the bus's gain down and back up, the same way as fading a single sound.

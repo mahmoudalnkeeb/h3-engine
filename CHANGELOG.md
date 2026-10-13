@@ -4,6 +4,25 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Breaking
+
+- `Audio#play` returns a `SoundHandle` (`{ source, gain }`) instead of the bare `AudioBufferSourceNode`. Code that only passes the handle to `Audio#stop` is unaffected; use `handle.source` where you used the node directly.
+
+### Added
+
+- `Scene#timeScale`: multiplies `dt` for the scene's entities, timers, tweens, camera and `update`. Replaces overriding the private `_step`.
+- `Scene#opaque`: when true, scenes below it on the stack aren't drawn.
+- `Scene#preload(assets, data)`: preload now receives the data passed to `switch` or `push`.
+- `Game` emits `hidden` and `visible` when the tab is hidden or shown.
+- `Camera#shakeScale`: multiplies every shake, for reduced-shake or no-shake settings.
+- `Input#pressedCodes`: the key codes pressed this step, for key remapping.
+- `Audio#bus(name)` and a `bus` option on `play` and `tone`: named gain nodes for separate music, effect and UI volumes.
+- `loopStart` and `loopEnd` options on `Audio#play`.
+
+### Changed
+
+- The guide documents that removes are applied before adds at the end of a step, which is what lets a pooled entity be destroyed and re-added in the same step.
+
 ## [0.2.0] - 2026-10-12
 
 ### Breaking

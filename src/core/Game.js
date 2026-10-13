@@ -54,7 +54,9 @@ const createContext = (game) => ({
 /**
  * Entry point. Creates every subsystem, runs the loop and owns the scene stack.
  *
- * Emits `resize`, `pause`, `resume` and `stop` on {@link Game#events}.
+ * Emits `resize`, `pause`, `resume` and `stop` on {@link Game#events}, plus
+ * `hidden` and `visible` when the tab is hidden or shown. The loop doesn't
+ * run while hidden, whether or not the game is paused.
  *
  * @example
  * const game = new Game({ canvas: '#game', width: 320, height: 180, scale: 'pixel' });
@@ -162,8 +164,13 @@ export class Game {
   }
 
   _pauseWhileHidden() {
-    if (document.hidden) this.loop.pause();
-    else if (!this.paused) this.loop.resume();
+    if (document.hidden) {
+      this.loop.pause();
+      this.events.emit('hidden');
+      return;
+    }
+    if (!this.paused) this.loop.resume();
+    this.events.emit('visible');
   }
 
   _update(dt) {
@@ -187,9 +194,14 @@ export class Game {
     const r = this.renderer;
     r.beginFrame();
     if (this.scenes.loading) this._renderLoading(r);
-    else for (const scene of this.scenes.stack) scene._draw(r, alpha);
+    else this._renderScenes(r, alpha);
     this.debug.render(r);
     r.endFrame();
+  }
+
+  _renderScenes(r, alpha) {
+    const stack = this.scenes.stack;
+    for (let i = this.scenes._firstDrawnIndex(); i < stack.length; i++) stack[i]._draw(r, alpha);
   }
 
   _renderLoading(r) {
