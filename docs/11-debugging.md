@@ -15,6 +15,8 @@ The hitboxes answer most collision questions instantly. "Why did that hit me?" u
 
 You can also turn it on from code with `new Game({ debug: true })`, or toggle `game.debug.enabled`.
 
+The stats panel is sized in CSS pixels rather than your game's logical pixels, so it stays small and sharp even in a 320×180 game scaled up to fill the window. Hitboxes are drawn in the world, at the scale of what they outline.
+
 ## Hiding things from the overlay
 
 Not every entity is gameplay. Particles, background layers and other decoration are entities too, so by default they get outlines like everything else. A burst of sparks turns into a cloud of green boxes that hides the hitboxes you actually wanted to look at.

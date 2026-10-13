@@ -80,6 +80,12 @@ export class Game {
     /** True after {@link Game#pause} until {@link Game#resume}. */
     this.paused = false;
     this._stepping = false;
+    /**
+     * Drawn after every scene and before the debug overlay, in screen space, every frame
+     * (also during loading). For things that sit above all scenes, like on-screen touch buttons.
+     * @type {((r: Renderer, alpha: number) => void) | null}
+     */
+    this.overlay = null;
 
     this.events = new Events();
     this.renderer = new RendererClass({ canvas, width, height, scale, background });
@@ -195,6 +201,7 @@ export class Game {
     r.beginFrame();
     if (this.scenes.loading) this._renderLoading(r);
     else this._renderScenes(r, alpha);
+    this.overlay?.(r, alpha);
     this.debug.render(r);
     r.endFrame();
   }

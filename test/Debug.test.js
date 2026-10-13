@@ -60,6 +60,17 @@ describe('Debug', () => {
     expect(entity.drawDebug).toHaveBeenCalledWith(r, '#0f0', 0.5);
   });
 
+  it('sizes the stats panel in CSS pixels, undoing the renderer scale', () => {
+    const { debug } = setup();
+    const r = fakeRenderer();
+    r.pixelScale = 4;
+    debug.render(/** @type {any} */ (r));
+    const scaleAt = r.calls.findIndex((c) => c[0] === 'scale');
+    expect(r.calls[scaleAt]).toEqual(['scale', 0.25, 0.25]);
+    expect(r.calls.findIndex((c) => c[0] === 'text')).toBeGreaterThan(scaleAt);
+    expect(r.calls.at(-1)).toEqual(['pop']);
+  });
+
   it('shows watched values, replaces by label and unwatches', () => {
     const { debug } = setup();
     debug.watch('hp', () => 3);

@@ -84,7 +84,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full rules. The short version: Pu
 
 Pre-1.0. The API may still change in minor versions.
 
-Done: the loop, renderer, input, scenes, entities, assets, sprites and animation, collision, camera, timers, tweens, audio, debug overlay and object pooling, with 95 unit tests. The renderer sits behind a backend interface (`Renderer`), with Canvas 2D (`CanvasRenderer`) as the only backend so far. Sprites and animation are covered by tests but not used by an example yet, since the examples draw everything with shapes.
+Done: the loop, renderer, input, scenes, entities, assets, sprites and animation, collision, camera, timers, tweens, audio, debug overlay and object pooling, with 96 unit tests. The renderer sits behind a backend interface (`Renderer`), with Canvas 2D (`CanvasRenderer`) as the only backend so far. Sprites and animation are covered by tests but not used by an example yet, since the examples draw everything with shapes.
 
 Before 1.0: publish to npm, and add an example that uses image assets.
 

@@ -93,9 +93,15 @@ class Player extends Entity {
 
 If you've never moved the camera, world space and screen space happen to line up, which is why this mistake only shows up later.
 
+A scene's `render` only covers that scene. For something that must sit above every scene, including menus pushed on top, like on-screen touch buttons, set `game.overlay`. It runs every frame after all scenes have drawn, in screen space:
+
+```js
+game.overlay = (r) => touchButtons.draw(r);
+```
+
 ## Draw order
 
-Entities draw sorted by `z` (low first, so high `z` ends up on top), then in the order they were added. After that, the scene's `render` draws on top of all of them. When several scenes are on the stack (a pause menu over a level), they draw bottom to top.
+Entities draw sorted by `z` (low first, so high `z` ends up on top), then in the order they were added. After that, the scene's `render` draws on top of all of them. When several scenes are on the stack (a pause menu over a level), they draw bottom to top. `game.overlay` draws after all of them, and the debug overlay last.
 
 ## Images and sprites
 

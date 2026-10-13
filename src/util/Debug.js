@@ -68,7 +68,8 @@ export class Debug {
   }
 
   /**
-   * Draw the overlay on top of everything. Called by the game each frame.
+   * Draw the overlay on top of everything. Called by the game each frame. The stats
+   * panel is sized in CSS pixels, so it keeps the same size at any logical resolution.
    * @param {import('../render/Renderer.js').Renderer} r
    */
   render(r) {
@@ -101,11 +102,15 @@ export class Debug {
       `scene ${scene ? scene.key : '-'}`,
     );
     for (const [label, read] of this._watches) lines.push(`${label} ${read()}`);
+    const panelScale = 1 / r.pixelScale;
+    r.push();
+    if (panelScale !== 1) r.scale(panelScale, panelScale);
     let longest = 0;
     for (const line of lines) if (line.length > longest) longest = line.length;
     r.rect(4, 4, longest * CHAR_WIDTH + 8, lines.length * LINE_HEIGHT + 4, PANEL_COLOR);
     for (let i = 0; i < lines.length; i++) {
       r.text(lines[i], 8, 8 + i * LINE_HEIGHT, TEXT_STYLE);
     }
+    r.pop();
   }
 }

@@ -18,9 +18,11 @@ All notable changes to this project are documented here. The format follows [Kee
 - `Input#pressedCodes`: the key codes pressed this step, for key remapping.
 - `Audio#bus(name)` and a `bus` option on `play` and `tone`: named gain nodes for separate music, effect and UI volumes.
 - `loopStart` and `loopEnd` options on `Audio#play`.
+- `Game#overlay`: a callback drawn every frame after all scenes, for things that sit above every scene.
 
 ### Changed
 
+- The debug overlay's stats panel is sized in CSS pixels instead of logical pixels, so it no longer covers half the screen at small logical resolutions.
 - The guide documents that removes are applied before adds at the end of a step, which is what lets a pooled entity be destroyed and re-added in the same step.
 
 ## [0.2.0] - 2026-10-12
