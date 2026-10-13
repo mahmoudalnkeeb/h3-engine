@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-13
+
 ### Breaking
 
 - `Audio#play` returns a `SoundHandle` (`{ source, gain }`) instead of the bare `AudioBufferSourceNode`. Code that only passes the handle to `Audio#stop` is unaffected; use `handle.source` where you used the node directly.
@@ -24,6 +26,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - The debug overlay's stats panel is sized in CSS pixels instead of logical pixels, so it no longer covers half the screen at small logical resolutions.
 - The guide documents that removes are applied before adds at the end of a step, which is what lets a pooled entity be destroyed and re-added in the same step.
+- The Breakout and platformer examples pause when the tab is hidden.
 
 ## [0.2.0] - 2026-10-12
 
